@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 1 ]; then
+	echo "USAGE: $0 DATABASE_FILE" >&2
+	exit 1
+fi
+
+sqlite3 $1 <<EOF
+CREATE TABLE IF NOT EXISTS tidbits
+(
+	message TEXT NOT NULL,
+	sent Integer NOT NULL
+);
+CREATE TABLE IF NOT EXISTS compliments
+(
+	message TEXT NOT NULL,
+	sent Integer NOT NULL
+);
+EOF

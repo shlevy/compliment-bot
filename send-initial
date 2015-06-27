@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$#" -ne 4 ]; then
+	echo "USAGE: $0 DATABASE_FILE NAME ADDRESS SENDER" >&2
+	exit 1
+fi
+sendmail $3 <<EOF
+From: Compliment Bot <complimentbot@shealevy.com>
+To: $2 <$3>
+Subject: $4 has set up a compliment bot for you!
+
+Hi, I'm Compliment Bot! I send you messages at regular intervals. Most of the
+time I send you random tidbits of information $4 thinks you might be interested
+in, but every now and then I'll send you a compliment $4 wishes to pay you as
+well!
+
+To start you off, here's a compliment!
+
+Did you know:
+$(sqlite3 $1 <<EEOF
+SELECT message FROM compliments WHERE sent=0 ORDER BY rowid LIMIT 1;
+EEOF
+)
+
+If you're curious how I work, feel free to check out
+https://github.com/shlevy/compliment-bot. Currently my frequency is hard-coded
+though, so if you want to be surprised with how often you get messages you might
+want to skip that!
+
+Have a lovely day!
+EOF
+
+sqlite3 $1 <<EOF
+UPDATE compliments SET sent=1 WHERE rowid IN (SELECT rowid FROM compliments WHERE sent=0 ORDER BY rowid LIMIT 1);
+EOF

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$#" -ne 3 ]; then
+	echo "USAGE: $0 DATABASE_FILE NAME ADDRESS" >&2
+	exit 1
+fi
+
+# TODO make param
+if [ "$RANDOM" -lt 6554 ]; then
+	table="compliments"
+	desc="compliment"
+else
+	table="tidbits"
+	desc="random tidbit"
+fi
+
+# TODO make from param
+sendmail $3 <<EOF
+From: Compliment Bot <complimentbot@shealevy.com>
+To: $2 <$3>
+Subject: A message from compliment bot!
+
+Compliment Bot has a $desc for you!
+
+Did you know:
+$(sqlite3 $1 <<EEOF
+SELECT message FROM $table WHERE sent=0 ORDER BY rowid LIMIT 1;
+EEOF
+)
+
+Have a lovely day!
+EOF
+
+sqlite3 $1 <<EOF
+UPDATE $table SET sent=1 WHERE rowid IN (SELECT rowid FROM $table WHERE sent=0 ORDER BY rowid LIMIT 1);
+EOF

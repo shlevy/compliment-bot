@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [ "$#" -ne 2 ]; then
+	echo "USAGE: $0 DATABASE_FILE TABLE" >&2
+	exit 1
+fi
+
+text=
+while read line
+do
+	text="$text
+$line"
+done
+
+text=$(echo "$text" | sed "s/'/\'\'/g")
+sqlite3 $1 <<EOF
+INSERT INTO $2 (message, sent) VALUES('$text', 0);
+EOF
